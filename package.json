@@ -1,0 +1,19 @@
+{
+  "name": "accessmap-vt",
+  "version": "0.1.0",
+  "description": "AccessMap Vector Tile Server",
+  "main": "app.js",
+  "engines": {
+    "node": "4.2.4",
+    "npm" : "2.14.12"
+  },
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Nick Bolten",
+  "license": "MIT",
+  "dependencies": {
+    "tilesplash": "^2.0.2"
+  }
+}
