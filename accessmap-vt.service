@@ -1,0 +1,21 @@
+[Unit]
+Description=AccessMap Vector Tiles Server
+
+[Service]
+Environment=NODE_ENV=production
+Environment=PORT=3001
+Environment=DATABASE_URL=postgresql://user:pass@host:port/database
+
+ExecStart=/home/nbolten/.nvm/versions/node/v5.9.1/bin/npm run app
+WorkingDirectory=<dir of repo>
+Restart=always
+# Restart service after 10 seconds if node service crashes
+RestartSec=10s
+StandardOutput=syslog 
+StandardError=syslog
+SyslogIdentifier=accessmapvt
+User=<your user>
+#Group=<alternate group>
+
+[Install]
+WantedBy=multi-user.target
