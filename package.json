@@ -1,15 +1,15 @@
 {
   "name": "tileserver",
   "version": "1.0.0",
-  "description": "A tilelive-based tile server",
+  "description": "AccessMap Server based on TileServer by @hanchao",
   "main": "tileserver.js",
   "author": {
     "name": "Nick Bolten",
-    "email": "hanchao0123@hotmail.com"
+    "email": "nbolten@gmail.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/hanchao/TileServer.git"
+    "url": "https://github.com/accessmap/accessmap-vt.git"
   },
   "dependencies": {
     "cron": "^1.2.1",
