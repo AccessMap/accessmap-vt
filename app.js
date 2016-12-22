@@ -32,6 +32,7 @@ app.layer('live', function(tile, render) {
   render({
     construction: 'SELECT ST_AsGeoJSON(geom) AS the_geom_geojson, \
                           address, \
+                          permit_number, \
                           to_char(start_date, \'YYYY-MM-DD\') AS start_date, \
                           to_char(end_date, \'YYYY-MM-DD\') AS end_date, \
                           closed \
