@@ -129,7 +129,7 @@ function updateTiles(cb) {
     (SELECT array_to_json(array_agg(f))
        FROM (SELECT 'Feature' as type,
                     ST_AsGeoJSON(geom)::json as geometry,
-                    json_build_object('adderss', address,
+                    json_build_object('address', address,
                                       'permit_number', permit_number,
                                       'start_date', to_char(start_date, 'YYYY-MM-DD'),
                                       'end_date', to_char(end_date, 'YYYY-MM-DD'),
