@@ -1,0 +1,4 @@
+{
+  "seattle" : "mbtiles://./data/mbtiles/seattle.mbtiles",
+  "live" : "mbtiles://./data/mbtiles/live.mbtiles"
+}

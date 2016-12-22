@@ -1,24 +1,24 @@
-accessmap-vt: Vector Tiles for AccessMap
-========================================
+# Overview
 
-accessmap-vt is a node web server (basically just
-[TileSplash](https://github.com/faradayio/tilesplash)) that serves up its
-`sidewalk` and `crossings` tables as vector tiles. This powers the data seen on
-the main AccessMap website.
+This server is adapted from the server written by @hanchao, available at
+https://github.com/hanchao/TileServer.git.
 
-### Running in dev mode
+The purpose of this server is to provide vector tiles for AccessMapSeattle.com.
 
-* run `npm install`
-* set up the environment variables described in set_envs.sh_example
-* run node ./app.js
+Differences between this server at that written by @hanchao:
 
-The vector tiles will be served up at localhost:3001. Refer to TileSplash's
-documentation (link above) for usage.
+- It pulls data from AccessMap's database
+- That data is processed into mbtiles using
+  [tippecanoe](https://github.com/mapbox/tippecanoe)
+- This data-pulling process happens on first run of the server and nightly at
+  midnight
 
+# Usage
 
-### Running in production
-A systemd service script is included that will work out-of-the-box when the
-&lt; &gt; fields are replaced by valid entries. It basically just needs to know
-the same environment variables as set_envs.sh_example, what user you want to
-run the app as (don't use root!), where the main app directory is (so it can
-use `node_modules`), and where to find the right node executable.
+1. Install the dependencies
+
+`npm install`
+
+2. Run the server
+
+`npm run app`
