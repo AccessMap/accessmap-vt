@@ -22,3 +22,7 @@ Differences between this server at that written by @hanchao:
 2. Run the server
 
 `npm run app`
+
+# License
+
+MIT (@hanchao's is available under WTFPL)
