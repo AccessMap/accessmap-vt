@@ -11,6 +11,10 @@
     "type": "git",
     "url": "https://github.com/accessmap/accessmap-vt.git"
   },
+  "scripts": {
+    "test": "mocha -R spec",
+    "app": "./tileserver.js ./config.json 3001"
+  },
   "dependencies": {
     "cron": "^1.2.1",
     "express": "~4.2.0",
@@ -39,9 +43,5 @@
   "bin": {
     "tileserver": "./tileserver.js",
     "tilecopy": "./tilecopy.js"
-  },
-  "scripts": {
-    "test": "mocha -R spec",
-    "app": "./tileserver.js ./config.json 3001"
   }
 }

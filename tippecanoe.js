@@ -149,14 +149,28 @@ function updateTiles(cb) {
   ])
   .then((d) => {
     console.log('Writing sidewalks to file');
+    var sidewalks = {
+      type: 'FeatureCollection',
+      features: d[0][0]['array_to_json']
+    }
     fs.writeFileSync(path.join(process.cwd(), 'sidewalks.geojson'),
-                     JSON.stringify(d[0][0]['array_to_json']));
+                     JSON.stringify(sidewalks));
+
     console.log('Writing crossings to file');
+    var crossings = {
+      type: 'FeatureCollection',
+      features: d[1][0]['array_to_json']
+    }
     fs.writeFileSync(path.join(process.cwd(), 'crossings.geojson'),
-                     JSON.stringify(d[1][0]['array_to_json']));
+                     JSON.stringify(crossings));
+
     console.log('Writing crossings to file');
+    var construction = {
+      type: 'FeatureCollection',
+      features: d[2][0]['array_to_json']
+    }
     fs.writeFileSync(path.join(process.cwd(), 'construction.geojson'),
-                     JSON.stringify(d[2][0]['array_to_json']));
+                     JSON.stringify(construction));
 
     runTippecanoe();
     cb();
