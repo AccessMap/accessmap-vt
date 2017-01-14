@@ -49,8 +49,7 @@ updateTiles(function(err) {
   }
 });
 
-function loadSource(name, callback){
-
+function loadSource(name, callback) {
 	tilecache.load(config[name], function(err, source) {
 		if (err) {
 			console.error(err.message);
@@ -105,7 +104,7 @@ function startServer(port){
 	app.get('/:name([^&\/]+).json', function(req, res){
 		var name = req.params.name;
 		if (sources[name] === undefined){
-			loadSource(name,function(err, source){
+			loadSource(name, function(err, source){
 				if (err) {
 					res.status(404)
 					res.send(err.message);

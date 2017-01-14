@@ -1,4 +1,4 @@
 {
-  "seattle" : "mbtiles://./data/mbtiles/seattle.mbtiles",
+  "pedestrian" : "mbtiles://./data/mbtiles/pedestrian.mbtiles",
   "live" : "mbtiles://./data/mbtiles/live.mbtiles"
 }

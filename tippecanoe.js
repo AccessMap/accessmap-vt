@@ -33,29 +33,29 @@ function runTippecanoe() {
 
   // Run the tippecanoe Dockerfile
   // convert to mbtiles file using tippecanoe
-  // var cmd = 'tippecanoe -f -o seattle -L sidewalks:sidewalks.mbtiles -L crossings:crossings.mbtiles';
-  var seattle = spawn('docker', [
+  // var cmd = 'tippecanoe -f -o pedestrian -L sidewalks:sidewalks.mbtiles -L crossings:crossings.mbtiles';
+  var pedestrian = spawn('docker', [
     'run', '-v', process.cwd() + ':/home/tippecanoe', 'tippecanoe',
     '-z', '20',
-    '-f', '-o', 'data/mbtiles/seattle.mbtiles',
-    '-L', 'sidewalks:sidewalks.geojson',
-    '-L', 'crossings:crossings.geojson'
+    '-f', '-o', 'data/mbtiles/pedestrian.mbtiles',
+    '-L', 'sidewalks:data/overlay/sidewalks.geojson',
+    '-L', 'crossings:data/overlay/crossings.geojson'
   ]);
 
-  seattle.stdout.on('data', function(d) {
+  pedestrian.stdout.on('data', function(d) {
     console.log('tippecanoe stdout: ' + d);
   });
 
-  seattle.stderr.on('data', function(d) {
+  pedestrian.stderr.on('data', function(d) {
     console.log('tippecanoe stderr: ' + d);
   });
 
-  seattle.on('close', function(code) {
+  pedestrian.on('close', function(code) {
     console.log('Mbtiles created');
     console.log('    Exited with code ' + code);
   });
 
-  seattle.on('error', function(err) {
+  pedestrian.on('error', function(err) {
     throw err;
   });
 
@@ -153,7 +153,8 @@ function updateTiles(cb) {
       type: 'FeatureCollection',
       features: d[0][0]['array_to_json']
     }
-    fs.writeFileSync(path.join(process.cwd(), 'sidewalks.geojson'),
+    fs.writeFileSync(path.join(process.cwd(),
+                               './data/overlay/sidewalks.geojson'),
                      JSON.stringify(sidewalks));
 
     console.log('Writing crossings to file');
@@ -161,7 +162,8 @@ function updateTiles(cb) {
       type: 'FeatureCollection',
       features: d[1][0]['array_to_json']
     }
-    fs.writeFileSync(path.join(process.cwd(), 'crossings.geojson'),
+    fs.writeFileSync(path.join(process.cwd(),
+                               './data/overlay/crossings.geojson'),
                      JSON.stringify(crossings));
 
     console.log('Writing crossings to file');
