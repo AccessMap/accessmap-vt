@@ -65,7 +65,7 @@ function runTippecanoe() {
     '-z', '20',
     '-r', '0',
     '-f', '-o', 'data/mbtiles/live.mbtiles',
-    '-L', 'construction:construction.geojson'
+    '-L', 'construction:data/overlay/construction.geojson'
   ]);
 
   live.stdout.on('data', function(d) {
@@ -171,7 +171,8 @@ function updateTiles(cb) {
       type: 'FeatureCollection',
       features: d[2][0]['array_to_json']
     }
-    fs.writeFileSync(path.join(process.cwd(), 'construction.geojson'),
+    fs.writeFileSync(path.join(process.cwd(),
+                               './data/overlay/construction.geojson'),
                      JSON.stringify(construction));
 
     runTippecanoe();
