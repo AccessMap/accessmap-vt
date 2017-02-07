@@ -5,3 +5,5 @@ set_envs.sh
 *.geojson
 *.swp
 *.mbtiles
+
+*.npm_debug.log
