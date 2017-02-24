@@ -43,9 +43,7 @@ var sources = {};
 
 updateTiles(function(err) {
   if (err) {
-    throw 'Failed to build initial mbtiles';
-  } else {
-    startServer(port);
+    throw 'Failed to build mbtiles';
   }
 });
 
@@ -113,7 +111,7 @@ function startServer(port){
 				sources[name] = source;
 				getInfo(sources[name],res);
 			});
-		}else{
+		} else {
 			getInfo(sources[name],res);
 		}
 	});
@@ -147,3 +145,6 @@ function startServer(port){
 		console.log('Listening on port %d', server.address().port);
 	});
 }
+
+
+startServer(port);

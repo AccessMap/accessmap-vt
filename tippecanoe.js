@@ -5,7 +5,7 @@ var fs = require('fs');
 var pgp = require('pg-promise')();
 var path = require('path');
 
-function runTippecanoe() {
+function runTippecanoe(cb) {
   // Build the tippecanoe Dockerfile
   var dockerBuild = spawn('docker', [
     'build',
@@ -19,11 +19,11 @@ function runTippecanoe() {
   });
 
   dockerBuild.stdout.on('data', function(d) {
-    console.log('docker stdout: ' + d);
+    // console.log('docker stdout: ' + d);
   });
 
   dockerBuild.stderr.on('data', function(d) {
-    console.log('docker stderr: ' + d);
+    // console.log('docker stderr: ' + d);
   });
 
   dockerBuild.on('close', function(code) {
@@ -37,20 +37,25 @@ function runTippecanoe() {
   var pedestrian = spawn('docker', [
     'run', '-v', process.cwd() + ':/home/tippecanoe', 'tippecanoe',
     '-z', '20',
-    '-f', '-o', 'data/mbtiles/pedestrian.mbtiles',
+    '-f', '-o', 'build/mbtiles/pedestrian.mbtiles',
     '-L', 'sidewalks:data/overlay/sidewalks.geojson',
     '-L', 'crossings:data/overlay/crossings.geojson'
   ]);
 
   pedestrian.stdout.on('data', function(d) {
-    console.log('tippecanoe stdout: ' + d);
+    // console.log('tippecanoe stdout: ' + d);
   });
 
   pedestrian.stderr.on('data', function(d) {
-    console.log('tippecanoe stderr: ' + d);
+    // console.log('tippecanoe stderr: ' + d);
   });
 
   pedestrian.on('close', function(code) {
+    // Move the build files to production dir, re-load the data source
+    // FIXME: this should actually be handled in the callback cb
+    fs.rename('build/mbtiles/pedestrian.mbtiles',
+              'data/mbtiles/pedestrian.mbtiles',
+              cb);
     console.log('Mbtiles created');
     console.log('    Exited with code ' + code);
   });
@@ -64,19 +69,22 @@ function runTippecanoe() {
     'run', '-v', process.cwd() + ':/home/tippecanoe', 'tippecanoe',
     '-z', '20',
     '-r', '0',
-    '-f', '-o', 'data/mbtiles/live.mbtiles',
+    '-f', '-o', 'build/mbtiles/live.mbtiles',
     '-L', 'construction:data/overlay/construction.geojson'
   ]);
 
   live.stdout.on('data', function(d) {
-    console.log('tippecanoe stdout: ' + d);
+    // console.log('tippecanoe stdout: ' + d);
   });
 
   live.stderr.on('data', function(d) {
-    console.log('tippecanoe stderr: ' + d);
+    // console.log('tippecanoe stderr: ' + d);
   });
 
   live.on('close', function(code) {
+    fs.rename('build/mbtiles/live.mbtiles',
+              'data/mbtiles/live.mbtiles',
+              cb);
     console.log('Mbtiles created');
     console.log('    Exited with code ' + code);
   });
@@ -175,8 +183,7 @@ function updateTiles(cb) {
                                './data/overlay/construction.geojson'),
                      JSON.stringify(construction));
 
-    runTippecanoe();
-    cb();
+    runTippecanoe(cb);
   })
   .catch(function(err) {
     cb('Error building Mbtiles');
