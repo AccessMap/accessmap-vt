@@ -142,12 +142,15 @@ function updateTiles(cb) {
                                       'start_date', to_char(start_date, 'YYYY-MM-DD'),
                                       'end_date', to_char(end_date, 'YYYY-MM-DD'),
                                       'closed', closed) AS properties
-               FROM construction) f)`, []);
+               FROM construction
+              WHERE start_date <= current_timestamp
+                AND end_date >= current_timestamp) f)`, []);
   fetchConstruction.then(function(data) {
     console.log('Extracted construction');
   })
   .catch(function(err) {
-    console.log('Error with crossings SQL query');
+    console.log('Error with construction SQL query');
+    console.error(err);
   });
 
   Promise.all([

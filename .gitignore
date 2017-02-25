@@ -7,4 +7,4 @@ set_envs.sh
 *.swp
 *.mbtiles
 
-*.npm_debug.log
+build/mbtiles/*
