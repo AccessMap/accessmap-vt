@@ -17,7 +17,7 @@ require('tilejson').registerProtocols(tilelive);
 require('tilelive-bridge').registerProtocols(tilelive);
 require('tilelive-vector').registerProtocols(tilelive);
 
-var updateTiles = require('./tippecanoe');
+var updateTiles = require('./rebuild');
 require('./cron');
 
 var app = express();
@@ -44,9 +44,12 @@ updateTiles(function(err) {
   if (err) {
     throw 'Failed to build mbtiles';
   }
-  tilelive.load(config['pedestrian'], function(err, source) {
-    sources['pedestrian'] = source;
-  });
+  var layers = ['live', 'pedestrian'];
+  for (var i = 0; i < layers.length; i++) {
+    tilelive.load(config[layers[i]], function(err, source) {
+      sources[layers[i]] = source;
+    });
+  }
 });
 
 function loadSource(name, callback) {
@@ -140,7 +143,6 @@ function startServer(port){
 		} else {
 			getTile(sources[name],z,x,y,res);
 		}
-
 	});
 
 	var server = app.listen(port, function() {

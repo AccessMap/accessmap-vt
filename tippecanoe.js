@@ -1,196 +1,106 @@
 // Registers a cron(-ish) job for tippecanoe that executes daily at midnight
-var exec = require('child_process').exec;
+var extend = require('xtend');
 var spawn = require('child_process').spawn;
-var fs = require('fs');
-var pgp = require('pg-promise')();
-var path = require('path');
 
-function runTippecanoe(cb) {
-  // Build the tippecanoe Dockerfile
-  var dockerBuild = spawn('docker', [
-    'build',
-    '-t',
-    'tippecanoe',
-    'tippecanoe-docker/'
-  ]);
 
-  dockerBuild.on('error', function(err) {
-    throw err;
-  });
+function Tippecanoe(options) {
+  this.options = extend({}, this.options, options);
+  this.exec = this.options.exec;
+  this.minzoom = this.options.minzoom;
+  this.maxzoom = this.options.maxzoom;
+  this.force = this.options.force;
+  this.docker = this.options.docker;
 
-  dockerBuild.stdout.on('data', function(d) {
-    // console.log('docker stdout: ' + d);
-  });
+  if (this.docker) {
+    // Set up docker
+    // Note: docker mode forces the executed command to use docker (exec option
+    // is ignored).
+    var docker = spawn('docker', [
+      'build',
+      '-t',
+      'tippecanoe',
+      'tippecanoe-docker/'
+    ]);
 
-  dockerBuild.stderr.on('data', function(d) {
-    // console.log('docker stderr: ' + d);
-  });
+    docker.on('error', function(err) {
+      throw err;
+    });
 
-  dockerBuild.on('close', function(code) {
-    console.log('Dockerfile built');
-    console.log('    Exited with code ' + code);
-  });
-
-  // Run the tippecanoe Dockerfile
-  // convert to mbtiles file using tippecanoe
-  // var cmd = 'tippecanoe -f -o pedestrian -L sidewalks:sidewalks.mbtiles -L crossings:crossings.mbtiles';
-  var pedestrian = spawn('docker', [
-    'run', '-v', process.cwd() + ':/home/tippecanoe', 'tippecanoe',
-    '-z', '20',
-    '-f', '-o', 'build/mbtiles/pedestrian.mbtiles',
-    '-L', 'sidewalks:data/overlay/sidewalks.geojson',
-    '-L', 'crossings:data/overlay/crossings.geojson'
-  ]);
-
-  pedestrian.stdout.on('data', function(d) {
-    // console.log('tippecanoe stdout: ' + d);
-  });
-
-  pedestrian.stderr.on('data', function(d) {
-    // console.log('tippecanoe stderr: ' + d);
-  });
-
-  pedestrian.on('close', function(code) {
-    // Move the build files to production dir, re-load the data source
-    // FIXME: this should actually be handled in the callback cb
-    fs.rename('build/mbtiles/pedestrian.mbtiles',
-              'data/mbtiles/pedestrian.mbtiles',
-              cb);
-    console.log('Mbtiles created');
-    console.log('    Exited with code ' + code);
-  });
-
-  pedestrian.on('error', function(err) {
-    throw err;
-  });
-
-  // `live` layer
-  var live = spawn('docker', [
-    'run', '-v', process.cwd() + ':/home/tippecanoe', 'tippecanoe',
-    '-z', '20',
-    '-r', '0',
-    '-f', '-o', 'build/mbtiles/live.mbtiles',
-    '-L', 'construction:data/overlay/construction.geojson'
-  ]);
-
-  live.stdout.on('data', function(d) {
-    // console.log('tippecanoe stdout: ' + d);
-  });
-
-  live.stderr.on('data', function(d) {
-    // console.log('tippecanoe stderr: ' + d);
-  });
-
-  live.on('close', function(code) {
-    fs.rename('build/mbtiles/live.mbtiles',
-              'data/mbtiles/live.mbtiles',
-              cb);
-    console.log('Mbtiles created');
-    console.log('    Exited with code ' + code);
-  });
-
-  live.on('error', function(err) {
-    throw err;
-  });
+    docker.on('close', function(code) {
+      if (code !== 0) {
+        throw 'Could not build tippecanoe Docker image';
+      }
+    });
+  }
 }
 
-function updateTiles(cb) {
-  // connect to database, write geojson file
-  var client = pgp(process.env.DATABASE_URL);
-  client.connect();
+Tippecanoe.prototype = {
+  options: {
+    'exec': 'tippecanoe',
+    'maxzoom': 14,
+    'minzoom': 0,
+    'rate': 0,
+    'force': false,
+    'docker': false
+  },
 
-  // TODO: implement query helper(s)?
-
-  // Get sidewalks layer
-  var fetchSidewalks = client.query(`
-    (SELECT array_to_json(array_agg(f))
-       FROM (SELECT 'Feature' as type,
-                    ST_AsGeoJSON(geom)::json as geometry,
-                    json_build_object('grade', grade) AS properties
-               FROM sidewalks) f)`, []);
-
-
-  fetchSidewalks.then(function(data) {
-    console.log('Extracted sidewalks');
-  });
-  fetchSidewalks.catch(function(err) {
-    console.log('Error with sidewalks SQL query');
-  });
-
-  // Get crossings layer
-  var fetchCrossings = client.query(`
-    (SELECT array_to_json(array_agg(f))
-       FROM (SELECT 'Feature' as type,
-                    ST_AsGeoJSON(geom)::json as geometry,
-                    json_build_object('grade', grade,
-                                      'curbramps', curbramps) AS properties
-               FROM crossings) f)`, []);
-  fetchCrossings.then(function(data) {
-    console.log('Extracted crossings');
-  });
-  fetchCrossings.catch(function(err) {
-    console.log('Error with crossings SQL query');
-  });
-
-  // Get construction layer
-  var fetchConstruction = client.query(`
-    (SELECT array_to_json(array_agg(f))
-       FROM (SELECT 'Feature' as type,
-                    ST_AsGeoJSON(geom)::json as geometry,
-                    json_build_object('address', address,
-                                      'permit_number', permit_number,
-                                      'start_date', to_char(start_date, 'YYYY-MM-DD'),
-                                      'end_date', to_char(end_date, 'YYYY-MM-DD'),
-                                      'closed', closed) AS properties
-               FROM construction
-              WHERE start_date <= current_timestamp
-                AND end_date >= current_timestamp) f)`, []);
-  fetchConstruction.then(function(data) {
-    console.log('Extracted construction');
-  })
-  .catch(function(err) {
-    console.log('Error with construction SQL query');
-    console.error(err);
-  });
-
-  Promise.all([
-    fetchSidewalks,
-    fetchCrossings,
-    fetchConstruction
-  ])
-  .then((d) => {
-    console.log('Writing sidewalks to file');
-    var sidewalks = {
-      type: 'FeatureCollection',
-      features: d[0][0]['array_to_json']
+  run: function(inpaths, outpath, callback) {
+    var exec = this.exec;
+    var arglist = [];
+    if (this.docker) {
+      exec = 'docker';
+      arglist.push('run');
+      arglist.push('-v');
+      arglist.push(process.cwd() + ':/home/tippecanoe');
+      arglist.push('tippecanoe');
     }
-    fs.writeFileSync(path.join(process.cwd(),
-                               './data/overlay/sidewalks.geojson'),
-                     JSON.stringify(sidewalks));
 
-    console.log('Writing crossings to file');
-    var crossings = {
-      type: 'FeatureCollection',
-      features: d[1][0]['array_to_json']
+    arglist.push('-z');
+    arglist.push(this.maxzoom);
+
+    arglist.push('-Z');
+    arglist.push(this.minzoom);
+
+    if (this.force) {
+      arglist.push('f')
     }
-    fs.writeFileSync(path.join(process.cwd(),
-                               './data/overlay/crossings.geojson'),
-                     JSON.stringify(crossings));
 
-    console.log('Writing crossings to file');
-    var construction = {
-      type: 'FeatureCollection',
-      features: d[2][0]['array_to_json']
+    arglist.push('-r');
+    arglist.push(this.options.rate);
+
+    arglist.push('-o');
+    arglist.push(outpath);
+
+    // Parse inpaths. There are two options:
+    // if string, it's just one layer.
+    // If object, it must be in form {'name': 'path'}, i.e. naming of the
+    // layer is required. There can be multiple key-value pairs for multiple
+    // layers
+    // FIXME: this is likely not the right way to do type checking
+    if (typeof inpaths === 'string') {
+      arglist.push(inpaths);
+    } else if(typeof inpaths === 'object') {
+      for (var p in inpaths) {
+        if (inpaths.hasOwnProperty(p)) {
+          arglist.push('-L');
+          arglist.push(p + ':' + inpaths[p]);
+        }
+      }
     }
-    fs.writeFileSync(path.join(process.cwd(),
-                               './data/overlay/construction.geojson'),
-                     JSON.stringify(construction));
 
-    runTippecanoe(cb);
-  })
-  .catch(function(err) {
-    cb('Error building Mbtiles');
-  });
+    var proc = spawn(exec, arglist);
+
+    // TODO: catch stdout data, turn into % completion events
+    proc.on('close', function(code) {
+      // Move the build files to production dir, re-load the data source
+      // FIXME: this should actually be handled in the callback cb
+      callback();
+    });
+    proc.on('error', function(err) {
+      callback(err);
+    });
+  }
 }
 
-module.exports = updateTiles;
+
+module.exports = Tippecanoe;

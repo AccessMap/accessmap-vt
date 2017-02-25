@@ -13,7 +13,7 @@
   },
   "scripts": {
     "test": "mocha -R spec",
-    "app": "./tileserver.js ./config.json 3001"
+    "app": "node ./tileserver.js ./config.json 3001"
   },
   "dependencies": {
     "cron": "^1.2.1",
