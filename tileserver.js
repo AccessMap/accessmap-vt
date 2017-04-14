@@ -15,7 +15,6 @@ require('tilelive-mapnik').registerProtocols(tilelive);
 require('tilelive-overlay').registerProtocols(tilelive);
 require('tilejson').registerProtocols(tilelive);
 require('tilelive-bridge').registerProtocols(tilelive);
-require('tilelive-vector').registerProtocols(tilelive);
 
 var updateTiles = require('./rebuild');
 require('./cron');

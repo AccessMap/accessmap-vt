@@ -5,7 +5,7 @@ var path = require('path');
 var Tippecanoe = require('./tippecanoe');
 
 var tippecanoe = new Tippecanoe({
-  maxzoom: 20,
+  maxzoom: 22,
   force: true,
   docker: true
 });
