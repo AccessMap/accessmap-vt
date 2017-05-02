@@ -7,19 +7,32 @@ var fs = require('fs');
 require('sqlite3').verbose();
 var express = require('express');
 var path = require("path");
-var tilelive = require('tilelive');
+var tilelive = require('@mapbox/tilelive');
 
-require('mbtiles').registerProtocols(tilelive);
-require('tilelive-file').registerProtocols(tilelive);
-require('tilelive-mapnik').registerProtocols(tilelive);
-require('tilelive-overlay').registerProtocols(tilelive);
-require('tilejson').registerProtocols(tilelive);
-require('tilelive-bridge').registerProtocols(tilelive);
+require('@mapbox/mbtiles').registerProtocols(tilelive);
+// require('tilelive-file').registerProtocols(tilelive);
+// require('tilelive-mapnik').registerProtocols(tilelive);
+require('@mapbox/tilelive-overlay').registerProtocols(tilelive);
+require('@mapbox/tilejson').registerProtocols(tilelive);
+require('@mapbox/tilelive-bridge').registerProtocols(tilelive);
+
+var env = process.env.NODE_ENV || 'development';
+
 
 var updateTiles = require('./rebuild');
 require('./cron');
 
 var app = express();
+
+// CORS
+if (env === 'development') {
+  app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers",
+               "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+  });
+}
 
 var configfile = process.argv[2];
 

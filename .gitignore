@@ -1,6 +1,7 @@
 /node_modules/*
 npm_debug.log
 .idea
+./*.log
 
 set_envs.sh
 *.geojson
