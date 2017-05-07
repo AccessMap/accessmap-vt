@@ -2,7 +2,7 @@
   "name": "tileserver",
   "version": "1.0.0",
   "description": "AccessMap Server based on TileServer by @hanchao",
-  "main": "tileserver.js",
+  "main": "src/tileserver.js",
   "author": {
     "name": "Nick Bolten",
     "email": "nbolten@gmail.com"
@@ -12,7 +12,7 @@
     "url": "https://github.com/accessmap/accessmap-vt.git"
   },
   "scripts": {
-    "app": "node ./tileserver.js ./config.json 3001"
+    "app": "node ./src/tileserver.js ./config.json 3001"
   },
   "dependencies": {
     "@mapbox/mbtiles": "^0.9.0",
@@ -30,7 +30,6 @@
     "xtend": "^4.0.1"
   },
   "bin": {
-    "tileserver": "./tileserver.js",
-    "tilecopy": "./tilecopy.js"
+    "tileserver": "./tileserver.js"
   }
 }

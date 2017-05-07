@@ -15,7 +15,7 @@ var tippecanoe = new Tippecanoe({
 });
 
 function makeMbtiles(name, paths, cb) {
-  console.log('Building tiles...');
+  console.log('Building ' + name + ' tiles...');
   mbtilesName = name + '.mbtiles';
   tippecanoe.run(paths, path.join('build/mbtiles', mbtilesName), e => {
     if (e) {
