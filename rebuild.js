@@ -8,7 +8,8 @@ var Tippecanoe = require('./tippecanoe');
 
 
 var tippecanoe = new Tippecanoe({
-  maxzoom: 22,
+  maxzoom: 17,
+  minzoom: 12,
   force: true,
   docker: true
 });
@@ -46,32 +47,29 @@ function updateTiles(cb) {
   var tiles = {
     pedestrian: {
       sidewalks: `
-      (SELECT array_to_json(array_agg(f))
-         FROM (SELECT 'Feature' as type,
-                      ST_AsGeoJSON(geom)::json as geometry,
-                      json_build_object('grade', grade) AS properties
-                 FROM sidewalks) f)`,
+        SELECT 'Feature' AS type,
+               ST_AsGeoJSON(ST_Transform(geom, 4326), 7)::json geometry,
+               json_build_object('grade', grade) properties
+          FROM sidewalks`,
       crossings: `
-      (SELECT array_to_json(array_agg(f))
-         FROM (SELECT 'Feature' as type,
-                      ST_AsGeoJSON(geom)::json as geometry,
-                      json_build_object('grade', grade,
-                                        'curbramps', curbramps) AS properties
-                 FROM crossings) f)`
+        SELECT 'Feature' AS type,
+               ST_AsGeoJSON(ST_Transform(geom, 4326), 7)::json geometry,
+               json_build_object('grade', grade,
+                                 'curbramps', curbramps) properties
+          FROM crossings`
     },
     live: {
       construction: `
-      (SELECT array_to_json(array_agg(f))
-         FROM (SELECT 'Feature' as type,
-                      ST_AsGeoJSON(geom)::json as geometry,
-                      json_build_object('address', address,
-                                        'permit_number', permit_number,
-                                        'start_date', to_char(start_date, 'YYYY-MM-DD'),
-                                        'end_date', to_char(end_date, 'YYYY-MM-DD'),
-                                        'closed', closed) AS properties
-                 FROM construction
-                WHERE start_date <= current_timestamp
-                  AND end_date >= current_timestamp) f)`
+        SELECT 'Feature' AS type,
+               ST_AsGeoJSON(ST_Transform(geom, 4326), 7)::json geometry,
+               json_build_object('address', address,
+                                 'permit_number', permit_number,
+                                 'start_date', to_char(start_date, 'YYYY-MM-DD'),
+                                 'end_date', to_char(end_date, 'YYYY-MM-DD'),
+                                 'closed', closed) properties
+          FROM construction
+         WHERE start_date <= current_timestamp
+           AND end_date >= current_timestamp`
     }
   };
 
@@ -87,7 +85,15 @@ function updateTiles(cb) {
                                  './data/overlay',
                                   layerName + '.geojson');
         let handle = fs.createWriteStream(filePath);
-        s.pipe(JSONStream.stringify()).pipe(handle);
+        handle.on('open', fd => {
+          handle.write('{"type": "FeatureCollection",');
+          handle.write(' "features": ');
+          s.pipe(JSONStream.stringify()).pipe(handle, {'end': false });
+          s.on('end', () => {
+            handle.write('}');
+            handle.end();
+          });
+        });
       });
       promises.push(stream);
     }

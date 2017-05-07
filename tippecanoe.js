@@ -55,19 +55,29 @@ Tippecanoe.prototype = {
       arglist.push('tippecanoe');
     }
 
+    // TODO: make this user-configurable
+    // Keep all detail past zoom 17
+    arglist.push('-B');
+    arglist.push(17);
+
+    // Maximum zoom level for which to build tiles
     arglist.push('-z');
     arglist.push(this.maxzoom);
 
+    // Minimum zoom level for which to build tiles
     arglist.push('-Z');
     arglist.push(this.minzoom);
 
+    // Force overwriting .mbtiles file if one already exists
     if (this.force) {
       arglist.push('f')
     }
 
+    // Drop rate for dots (lower zoom levels = dropped out points)
     arglist.push('-r');
     arglist.push(this.options.rate);
 
+    // Path to which mbtiles will be written
     arglist.push('-o');
     arglist.push(outpath);
 

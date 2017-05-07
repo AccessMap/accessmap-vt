@@ -1,7 +1,7 @@
 FROM alpine:3.4
 MAINTAINER Jake Skeates <jake@skeat.es>
 
-ARG TIPPECANOE_RELEASE="1.14.4"
+ARG TIPPECANOE_RELEASE="1.17.1"
 
 RUN apk add --no-cache sudo git g++ make libgcc libstdc++ sqlite-libs sqlite-dev zlib-dev bash \
  && addgroup sudo && adduser -G sudo -D -H tippecanoe && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers \
