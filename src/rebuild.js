@@ -33,7 +33,7 @@ function makeMbtiles(name, paths, cb) {
   });
 }
 
-function updateTiles(cb) {
+function updateTiles(tilesSQL, cb) {
   console.log('Extracting layers from database...');
   // connect to database, write geojson file
   var db = pgp(process.env.DATABASE_URL);
@@ -44,37 +44,8 @@ function updateTiles(cb) {
   var QueryStream = require('pg-query-stream');
   var JSONStream = require('JSONStream');
 
-  var tiles = {
-    pedestrian: {
-      sidewalks: `
-        SELECT 'Feature' AS type,
-               ST_AsGeoJSON(ST_Transform(geom, 4326), 7)::json geometry,
-               json_build_object('grade', grade) properties
-          FROM sidewalks`,
-      crossings: `
-        SELECT 'Feature' AS type,
-               ST_AsGeoJSON(ST_Transform(geom, 4326), 7)::json geometry,
-               json_build_object('grade', grade,
-                                 'curbramps', curbramps) properties
-          FROM crossings`
-    },
-    live: {
-      construction: `
-        SELECT 'Feature' AS type,
-               ST_AsGeoJSON(ST_Transform(geom, 4326), 7)::json geometry,
-               json_build_object('address', address,
-                                 'permit_number', permit_number,
-                                 'start_date', to_char(start_date, 'YYYY-MM-DD'),
-                                 'end_date', to_char(end_date, 'YYYY-MM-DD'),
-                                 'closed', closed) properties
-          FROM construction
-         WHERE start_date <= current_timestamp
-           AND end_date >= current_timestamp`
-    }
-  };
-
-  for (let tileName of Object.keys(tiles)) {
-    let layers = tiles[tileName];
+  for (let tileName of Object.keys(tilesSQL)) {
+    let layers = tilesSQL[tileName];
     let promises = [];
 
     for (let layerName of Object.keys(layers)) {

@@ -34,25 +34,26 @@ if (env === 'development') {
   });
 }
 
-var configfile = process.argv[2];
-
-console.log('load %s', configfile);
-
-if (!configfile) {
-   console.warn('usage: ');
-   console.warn('  ./tileserver.js <configfile> <port>');
-   console.warn('example: ');
-   console.warn('  ./tileserver.js ./config.json 3000');
-   process.exit(1);
-}
+var configfile = 'config.json';
+var sourcesfile = 'sources.json';
 
 var config = JSON.parse(fs.readFileSync(configfile, 'utf-8'))
+var tilesSQL = JSON.parse(fs.readFileSync(sourcesfile, 'utf-8'))
+
+// Process multi-line SQL from sources SQL
+for (let tileName of Object.keys(tilesSQL)) {
+  let layers = tilesSQL[tileName];
+  for (let layerName of Object.keys(layers)) {
+    let sqlArray = layers[layerName];
+    layers[layerName] = sqlArray.join('\n');
+  }
+}
 
 var port = process.argv[3] || 3000;
 
 var sources = {};
 
-updateTiles(function(err) {
+updateTiles(tilesSQL, function(err) {
   if (err) {
     throw 'Failed to build mbtiles';
   }

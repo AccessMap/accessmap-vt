@@ -11,3 +11,6 @@ set_envs.sh
 *.mbtiles
 
 build/mbtiles/*
+
+sources.json
+config.json
