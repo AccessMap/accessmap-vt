@@ -15,11 +15,23 @@ Differences between this server at that written by @hanchao:
 
 # Usage
 
-1. Install the dependencies
+1. Install tippecanoe
+
+a. `accessmap-vt` defaults to using docker to run tippecanoe, expecting an
+image tagged as `tippecanoe`. To create this image, run
+`docker build -t tippecanoe tippecanoe-docker` in the cloned `accessmap-vt`
+directory.
+
+b. Install manually following the instructions at the
+[tippecanoe](https://github.com/mapbox/tippecanoe) repository. Edit the
+`src/rebuild.js` file and set docker: false when the `Tippecanoe` object is
+initialized.
+
+2. Install the dependencies
 
 `npm install`
 
-2. Run the server
+3. Run the server
 
 `npm run app`
 

@@ -10,28 +10,6 @@ function Tippecanoe(options) {
   this.maxzoom = this.options.maxzoom;
   this.force = this.options.force;
   this.docker = this.options.docker;
-
-  if (this.docker) {
-    // Set up docker
-    // Note: docker mode forces the executed command to use docker (exec option
-    // is ignored).
-    var docker = spawn('docker', [
-      'build',
-      '-t',
-      'tippecanoe',
-      'tippecanoe-docker/'
-    ]);
-
-    docker.on('error', function(err) {
-      throw err;
-    });
-
-    docker.on('close', function(code) {
-      if (code !== 0) {
-        throw 'Could not build tippecanoe Docker image';
-      }
-    });
-  }
 }
 
 Tippecanoe.prototype = {
