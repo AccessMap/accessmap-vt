@@ -50,6 +50,7 @@ for (let tileName of Object.keys(tilesSQL)) {
 }
 
 var port = process.argv[3] || 3000;
+var host = process.argv[4] || '127.0.0.1';
 
 var sources = {};
 
@@ -100,7 +101,7 @@ function getTile(source, z, x, y, res){
 	});
 }
 
-function startServer(port){
+function startServer(port, host){
 
 	app.use(express.static(path.join(__dirname, 'public')));
 
@@ -158,7 +159,7 @@ function startServer(port){
 		}
 	});
 
-	var server = app.listen(port, function() {
+	var server = app.listen(port, host, 511, function() {
 		console.log('Listening on port %d', server.address().port);
 	});
 }

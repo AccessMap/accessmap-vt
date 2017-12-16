@@ -11,7 +11,7 @@ var tippecanoe = new Tippecanoe({
   maxzoom: 17,
   minzoom: 12,
   force: true,
-  docker: true
+  docker: process.env.DOCKER === 'no' ? false: true
 });
 
 function makeMbtiles(name, paths, cb) {
